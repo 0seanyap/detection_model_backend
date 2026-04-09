@@ -125,7 +125,27 @@ def draw_boxes(frame, detections):
 # ---------- ROUTES ----------
 @app.route("/")
 def home():
-    return "Pothole Detection API is running 🚀"
+    return """
+        <h2>Pothole Detection - Live Feed</h2>
+        <p id="status">Waiting for upload...</p>
+        <img id="preview" src="" style="max-width:800px; display:none; margin-top:12px;">
+        <div id="table-container"></div>
+
+        <script>
+            setInterval(async () => {
+                const res = await fetch("/image", { method: "HEAD" });
+                if (res.ok) {
+                    document.getElementById("preview").src = "/image?t=" + Date.now();
+                    document.getElementById("preview").style.display = "block";
+                    document.getElementById("status").innerText = "Last uploaded image:";
+                }
+
+                const tableRes = await fetch("/results");
+                const html = await tableRes.text();
+                document.getElementById("table-container").innerHTML = html;
+            }, 1000);
+        </script>
+    """
 
 
 @app.route("/results")
