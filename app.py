@@ -6,6 +6,7 @@ import cv2
 from PIL import Image
 from flask import Flask, request, jsonify, send_file
 from ultralytics import YOLO
+import gdown
 
 app = Flask(__name__)
 
@@ -15,7 +16,7 @@ FILE_ID = os.environ.get("MODEL_FILE_ID")  # Set this in Render env vars
 
 # ---------- DOWNLOAD MODEL ----------
 def download_model():
-    if os.path.exists(MODEL_PATH):
+    if os.path.exists(MODEL_PATH):  
         print("Model already exists, skipping download.")
         return
 
@@ -31,7 +32,8 @@ def download_model():
             token = value
 
     if token:
-        response = session.get(URL, params={"id": FILE_ID, "confirm": token}, stream=True)
+        # response = session.get(URL, params={"id": FILE_ID, "confirm": token}, stream=True)
+        gdown.download(URL, 'lynne_best.pt', quiet=False)
 
     with open(MODEL_PATH, "wb") as f:
         for chunk in response.iter_content(1024*1024):
