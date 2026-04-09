@@ -12,24 +12,35 @@ app = Flask(__name__)
 
 # ---------- CONFIG ----------
 MODEL_PATH = "lynne_best.pt"
-# FILE_ID = os.environ.get("MODEL_FILE_ID")  # Set this in Render env vars
-MODEL_URL = os.environ.get("MODEL_URL")
+FILE_ID = os.environ.get("MODEL_FILE_ID")  # Set this in Render env vars
 
 # ---------- DOWNLOAD MODEL ----------
-import os
-import urllib.request
-
-MODEL_PATH = "lynne_best.pt"
-MODEL_URL = os.environ.get("MODEL_URL")
-
 def download_model():
-    if os.path.exists(MODEL_PATH):
-        print("Model already exists.")
+    if os.path.exists(MODEL_PATH):  
+        print("Model already exists, skipping download.")
         return
 
-    print("Downloading model from Dropbox...")
-    urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
-    print("Download complete!")
+    print("Downloading model from Google Drive...")
+    URL = "https://drive.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(URL, params={"id": FILE_ID}, stream=True)
+
+    # Handle large file confirmation
+    token = None
+    for key, value in response.cookies.items():
+        if key.startswith("download_warning"):
+            token = value
+
+    if token:
+        # response = session.get(URL, params={"id": FILE_ID, "confirm": token}, stream=True)
+        gdown.download(url, 'lynne_best.pt', quiet=False)
+
+    with open(MODEL_PATH, "wb") as f:
+        for chunk in response.iter_content(1024*1024):
+            if chunk:
+                f.write(chunk)
+
+    print("Model downloaded successfully!")
 
 download_model()
 
