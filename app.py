@@ -6,6 +6,7 @@ import cv2
 from PIL import Image
 from flask import Flask, request, jsonify, send_file
 from ultralytics import YOLO
+import uuid
 
 app = Flask(__name__)
 
@@ -215,13 +216,28 @@ def detect():
             "severity": severity,
             "severity_score": score,
             "center_avg": center_avg,
+            # "cropped_potholes": ,
+            # "original_image" : 
         })
 
     annotated_frame = draw_boxes(frame, last_detections)
+    # Save image to file
+    os.makedirs("static", exist_ok=True)
+    filename = f"static/{uuid.uuid4().hex}.jpg"
+    cv2.imwrite(filename, annotated_frame)
+
     _, buffer = cv2.imencode(".jpg", annotated_frame)
     last_uploaded_image = buffer.tobytes()
 
-    return jsonify(last_detections)
+    # modified
+    # return jsonify(last_detections)
+    base_url = request.host_url  # e.g. https://your-app.onrender.com/
+    image_url = base_url + filename
+
+    return jsonify({
+        "detections": last_detections,
+        "image_url": image_url
+    })
 
 
 @app.route("/image")
