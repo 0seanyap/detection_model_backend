@@ -205,6 +205,11 @@ def detect():
             continue
 
         pothole_crop = frame[y1:y2, x1:x2]
+        os.makedirs("static", exist_ok=True)
+        crop_filename = f"static/crop_{uuid.uuid4().hex}.jpg"
+        cv2.imwrite(crop_filename, pothole_crop)
+        crop_url = request.host_url + crop_filename
+
         area_norm = ((x2 - x1) * (y2 - y1)) / img_area
         severity, score, center_avg = compute_severity(pothole_crop, area_norm)
 
@@ -216,8 +221,7 @@ def detect():
             "severity": severity,
             "severity_score": score,
             "center_avg": center_avg,
-            # "cropped_potholes": ,
-            # "original_image" : 
+            "crop_img_url": crop_url
         })
 
     annotated_frame = draw_boxes(frame, last_detections)
