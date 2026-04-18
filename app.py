@@ -72,7 +72,15 @@ def compute_severity(pothole_crop, area_norm):
     else:
         severity = "High"
 
-    return severity, round(severity_score, 3), round(center_avg, 3)
+    if area_norm < 0.2:
+        size = "Small"
+    elif area_norm < 0.5:
+        size = "Medium"
+    else:
+        area_norm = "Large"
+
+
+    return size, severity, round(severity_score, 3), round(center_avg, 3)
 
 
 def draw_boxes(frame, detections):
@@ -211,7 +219,7 @@ def detect():
         crop_url = request.host_url + crop_filename
 
         area_norm = ((x2 - x1) * (y2 - y1)) / img_area
-        severity, score, center_avg = compute_severity(pothole_crop, area_norm)
+        size, severity, score, center_avg = compute_severity(pothole_crop, area_norm)
 
         last_detections.append({
             "id": i,
@@ -220,6 +228,7 @@ def detect():
             "bbox": [x1, y1, x2, y2],
             "severity": severity,
             "severity_score": score,
+            "size": size,
             "center_avg": center_avg,
             "crop_img_url": crop_url
         })
